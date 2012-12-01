@@ -8,17 +8,17 @@
  * BEGIN MFTP SENSORES FUNCTIONS
  ****************************************************************************/
 
-/* constants */
+/* constants 
 enum { 
         MAX_SENSORS = 20, 
         MAX_SENSORS_TYPES = 40, 
-};
+};*/
 
 
 /* 
  * constructor
  */
-  MFTP_Sensores() {
+  MFTP_Sensores::MFTP_Sensores() {
 
 	for(int i = 0;i<MAX_SENSORS;i++) {
 		_active_sensors[i] = false;
@@ -26,9 +26,9 @@ enum {
 		_sensors_matrix[i][1] = 0;
 	}
 	for(int i = 0;i<MAX_SENSORS_TYPES;i++) {
-		_type_sensors_matrix[i][0] = 0;
-		_type_sensors_matrix[i][1] = 0;
-		_type_sensors_matrix[i][2] = 0;
+		_sensors_type_matrix[i][0] = 0;
+		_sensors_type_matrix[i][1] = 0;
+		_sensors_type_matrix[i][2] = 0;
 	}
 
  }
@@ -41,9 +41,9 @@ enum {
  */
   void MFTP_Sensores::add_type(int id, int parA, int parB, int mult){
 
-	_type_sensors_matrix[id-1][0] = parA;
-	_type_sensors_matrix[id-1][1] = parB;
-	_type_sensors_matrix[id-1][2] = mult;
+	_sensors_type_matrix[id-1][0] = parA;
+	_sensors_type_matrix[id-1][1] = parB;
+	_sensors_type_matrix[id-1][2] = mult;
 	
   }
 
@@ -68,9 +68,10 @@ enum {
  */
   int MFTP_Sensores::get_value(int sensor_id){
 	
-	int parA = _sensors_type_matrix[_sensors_matrix[sensor_id-1][0]][0];
-	int parB = _sensors_type_matrix[_sensors_matrix[sensor_id-1][0]][1];
-	int multiplier = _sensors_type_matrix[_sensors_matrix[sensor_id-1][0]][2];
+	int type = _sensors_matrix[sensor_id-1][0];
+	int parA = _sensors_type_matrix[type][0];
+	int parB = _sensors_type_matrix[type][1];
+	int multiplier = _sensors_type_matrix[type][2];
 	int value = multiplier*(parA+ parB*analogRead(_sensors_matrix[sensor_id-1][1]));
 	return value;
 
@@ -83,7 +84,7 @@ enum {
  */
   void MFTP_Sensores::get_all_values(int *sensor_values){
 
-	for(int id=1;i<=MAX_SENSORS;id++) {
+	for(int id=1;id<=MAX_SENSORS;id++) {
 
 		if(_active_sensors[id-1] = true) {
 			

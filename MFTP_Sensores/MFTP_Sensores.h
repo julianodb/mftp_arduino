@@ -11,9 +11,14 @@
 
 class MFTP_Sensores {
 private:
+
+enum { 
+        MAX_SENSORS = 20, 
+        MAX_SENSORS_TYPES = 40, 
+};
   bool _active_sensors[MAX_SENSORS];
   int _sensors_matrix[MAX_SENSORS][2]; // type & address
-  int _type_sensors_matrix[MAX_SENSORS_TYPES][3]; // parameter A & parameter B & multiplier
+  int _sensors_type_matrix[MAX_SENSORS_TYPES][3]; // parameter A & parameter B & multiplier
 
   
 public:
