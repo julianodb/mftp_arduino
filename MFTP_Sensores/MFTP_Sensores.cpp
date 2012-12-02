@@ -63,9 +63,9 @@
 	
 	if(_active_sensors[sensor_id-1]) {
 		int type = _sensors_matrix[sensor_id-1][0];
-		int parA = _sensors_type_matrix[type][0];
-		int parB = _sensors_type_matrix[type][1];
-		int multiplier = _sensors_type_matrix[type][2];
+		int parA = _sensors_type_matrix[type-1][0];
+		int parB = _sensors_type_matrix[type-1][1];
+		int multiplier = _sensors_type_matrix[type-1][2];
 		int value = multiplier*(parA+ parB*analogRead(_sensors_matrix[sensor_id-1][1]));
 		return value;
 	}
