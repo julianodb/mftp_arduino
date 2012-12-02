@@ -9,6 +9,7 @@
  * BEGIN MFTP MOTORES FUNCTIONS
  ****************************************************************************/
 
+
 /* 
  * constructor
  */
@@ -18,9 +19,6 @@
 
 	_encoder0=0;
 	_encoder1=0;
-
-	PID PID0(&_encoder0, &_encoder0, &_encoder0,0.014,1,0, DIRECT);
-	PID PID1(&_encoder1, &_encoder1, &_encoder1,0.014,1,0, DIRECT);
 
 
 	for(int i = 0;i<MAX_MOTORS;i++) {
@@ -48,7 +46,7 @@
 	  _motor_dynamic_matrix[i][5] = 0;
 	  _motor_dynamic_matrix[i][6] = 0;
 
-      _motors_PID[i] = &PID0;
+      //_motors_PID[i] = &_PID0;
 
 	}
 
@@ -56,32 +54,32 @@
 ////////////////////////
 
 
-void doEncoder0() { // problem : there are only interrupts for pin 2 and 3 !!!
+static void doEncoder0() { // problem : there are only interrupts for pin 2 and 3 !!!
   /* If pinA and pinB are both high or both low, it is spinning
    * forward. If they're different, it's going backward.
    *
    * For more information on speeding up this process, see
    * [Reference/PortManipulation], specifically the PIND register.
    */
-	if (digitalRead(_encoder0_pinA) == digitalRead(_encoder0_pinB)) {
-	_encoder0++;
+	if (digitalRead(MFTP_Motores::_encoder0_pinA) == digitalRead(MFTP_Motores::_encoder0_pinB)) {
+	MFTP_Motores::_encoder0++;
 	} else {
-	_encoder0--;
+	MFTP_Motores::_encoder0--;
 	}
 
 }
 
-void doEncoder1() { // problem : there are only interrupts for pin 2 and 3 !!!
+static void doEncoder1() { // problem : there are only interrupts for pin 2 and 3 !!!
   /* If pinA and pinB are both high or both low, it is spinning
    * forward. If they're different, it's going backward.
    *
    * For more information on speeding up this process, see
    * [Reference/PortManipulation], specifically the PIND register.
    */
-	if (digitalRead(_encoder1_pinA) == digitalRead(_encoder1_pinB)) {
-	_encoder1++;
+	if (digitalRead(MFTP_Motores::_encoder1_pinA) == digitalRead(MFTP_Motores::_encoder1_pinB)) {
+	MFTP_Motores::_encoder1++;
 	} else {
-	_encoder1--;
+	MFTP_Motores::_encoder1--;
 	}
 
 }
@@ -94,7 +92,7 @@ void doEncoder1() { // problem : there are only interrupts for pin 2 and 3 !!!
  * adds a new motor
  *
  */
-  void MFTP_Motores::add_motor(int id, int pwm1, int pwm2, int cnA, int cnB, int ppv, int curso, int reducao, int vmax, int Kp, int invTp, int posini){
+void MFTP_Motores::add_motor(int id, int pwm1, int pwm2, int cnA, int cnB, int ppv, int curso, int reducao, int vmax, int Kp, int invTp, int posini){
 
 	  _motor_matrix[id-1][0] = pwm1;
 	  _motor_matrix[id-1][1] = pwm2;
@@ -125,8 +123,9 @@ void doEncoder1() { // problem : there are only interrupts for pin 2 and 3 !!!
 		_encoder0_pinB = cnB;
 		attachInterrupt(0, doEncoder0, CHANGE);
 		
-		PID0(&_motor_dynamic_matrix[id-1][5], &_motor_dynamic_matrix[id-1][6], &_motor_dynamic_matrix[id-1][0],(double)Kp/(double)invTp,Kp,0, DIRECT);
-        _motors_PID[i] = &PID0;
+		static PID _PID0(&_motor_dynamic_matrix[id-1][5], &_motor_dynamic_matrix[id-1][6], &_motor_dynamic_matrix[id-1][0],(double)Kp/(double)invTp,Kp,0, DIRECT);
+		_PID0.SetSampleTime(0.089/Kp);
+        _motors_PID[id-1] = _PID0;
 	}
 	if(cnA = 3) {
 		_encoder_pos[id-1] = &_encoder1;
@@ -134,8 +133,9 @@ void doEncoder1() { // problem : there are only interrupts for pin 2 and 3 !!!
 		_encoder1_pinB = cnB;
 		attachInterrupt(1, doEncoder1, CHANGE);
 
-		PID1(&_motor_dynamic_matrix[id-1][5], &_motor_dynamic_matrix[id-1][6], &_motor_dynamic_matrix[id-1][0],(double)Kp/(double)invTp,Kp,0, DIRECT);
-        _motors_PID[i] = &PID1;
+		static PID _PID1(&_motor_dynamic_matrix[id-1][5], &_motor_dynamic_matrix[id-1][6], &_motor_dynamic_matrix[id-1][0],(double)Kp/(double)invTp,Kp,0, DIRECT);
+		_PID1.SetSampleTime(0.089/Kp);
+        _motors_PID[id-1] = _PID1;
 	}
 
 	  _active_motors[id-1] = true;
@@ -163,7 +163,7 @@ void doEncoder1() { // problem : there are only interrupts for pin 2 and 3 !!!
  */
   void MFTP_Motores::set_speed(int motor_id, int speed) {
 
-	_motor_dynamic_matrix[motor_id-1][0] = 255*speed/vmax;
+	_motor_dynamic_matrix[motor_id-1][0] = 255*speed/_motor_matrix[motor_id-1][7];
 
   }
 
@@ -188,10 +188,10 @@ void doEncoder1() { // problem : there are only interrupts for pin 2 and 3 !!!
   void MFTP_Motores::set_move(int motor_id, boolean move) {
 
 	_moving_motors[motor_id-1] = move;
-  	if(move) *_motors_PID.SetMode(AUTOMATIC);
+  	if(move) _motors_PID[motor_id-1].SetMode(AUTOMATIC);
 	else {
 	  if(_active_motors[motor_id-1]) {
-	  	*_motors_PID[motor_id-1].SetMode(MANUAL);
+	  	_motors_PID[motor_id-1].SetMode(MANUAL);
   		analogWrite(_motor_matrix[motor_id-1][0],255);
   		analogWrite(_motor_matrix[motor_id-1][1],255);
 	  }
@@ -206,7 +206,7 @@ void doEncoder1() { // problem : there are only interrupts for pin 2 and 3 !!!
  */
   int MFTP_Motores::get_pos(int motor_id) {
 
-  	return  _motor_dynamic_matrix[id-1][2];
+  	return  _motor_dynamic_matrix[motor_id-1][2];
 
   }
 
@@ -243,7 +243,7 @@ void doEncoder1() { // problem : there are only interrupts for pin 2 and 3 !!!
 
 		if(_moving_motors[id-1]) {
 
-		  *_motors_PID[id-1].Compute();
+		  _motors_PID[id-1].Compute();
 		  if (_motor_dynamic_matrix[id-1][6]==0) { //stop
 	  		analogWrite(_motor_matrix[id-1][0],255);
 	  		analogWrite(_motor_matrix[id-1][1],255);
@@ -270,6 +270,4 @@ void doEncoder1() { // problem : there are only interrupts for pin 2 and 3 !!!
 
   }
 
-};
 
-#endif
