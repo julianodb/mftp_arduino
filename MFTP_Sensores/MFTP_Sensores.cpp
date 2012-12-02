@@ -8,13 +8,6 @@
  * BEGIN MFTP SENSORES FUNCTIONS
  ****************************************************************************/
 
-/* constants 
-enum { 
-        MAX_SENSORS = 20, 
-        MAX_SENSORS_TYPES = 40, 
-};*/
-
-
 /* 
  * constructor
  */

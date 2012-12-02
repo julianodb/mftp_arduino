@@ -1,0 +1,5 @@
+MFTP_Motores	KEYWORD1
+add_type	KEYWORD2
+add_sensor	KEYWORD2
+get_value	KEYWORD2
+get_all_values	KEYWORD2
