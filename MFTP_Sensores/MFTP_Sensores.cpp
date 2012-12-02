@@ -81,12 +81,9 @@
   void MFTP_Sensores::get_all_values(int *sensor_values){
 
 	for(int id=1;id<=MAX_SENSORS;id++) {
-
-		if(_active_sensors[id-1] = true) {
 			
-			int value = get_value(id);
-			sensor_values[id] = value;
-		}
+		int value = get_value(id);
+		sensor_values[id] = value;
 	}
 
   } // get_values
