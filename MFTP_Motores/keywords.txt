@@ -1,5 +1,8 @@
 MFTP_Motores	KEYWORD1
-add_type	KEYWORD2
-add_sensor	KEYWORD2
-get_value	KEYWORD2
-get_all_values	KEYWORD2
+add_motor	KEYWORD2
+emergency_stop	KEYWORD2
+set_speed	KEYWORD2
+set_target	KEYWORD2
+set_move	KEYWORD2
+get_pos	KEYWORD2
+refresh	KEYWORD2

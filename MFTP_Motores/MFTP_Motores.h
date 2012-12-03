@@ -26,13 +26,8 @@ private:
 
   PID _motors_PID[MAX_MOTORS];
 
-  static void doEncoder0(); 
-  static void doEncoder1();
   
 public:
-  static int _encoder0, _encoder0_pinA, _encoder0_pinB,
-	  _encoder1, _encoder1_pinA, _encoder1_pinB;
-
 /* 
  * constructor
  */

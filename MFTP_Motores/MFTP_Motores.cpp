@@ -9,6 +9,11 @@
  * BEGIN MFTP MOTORES FUNCTIONS
  ****************************************************************************/
 
+static int _encoder0, _encoder0_pinA, _encoder0_pinB,
+  _encoder1, _encoder1_pinA, _encoder1_pinB;
+
+static void doEncoder0(); 
+static void doEncoder1();
 
 /* 
  * constructor
@@ -51,39 +56,6 @@
 	}
 
  }
-////////////////////////
-
-
-static void doEncoder0() { // problem : there are only interrupts for pin 2 and 3 !!!
-  /* If pinA and pinB are both high or both low, it is spinning
-   * forward. If they're different, it's going backward.
-   *
-   * For more information on speeding up this process, see
-   * [Reference/PortManipulation], specifically the PIND register.
-   */
-	if (digitalRead(MFTP_Motores::_encoder0_pinA) == digitalRead(MFTP_Motores::_encoder0_pinB)) {
-	MFTP_Motores::_encoder0++;
-	} else {
-	MFTP_Motores::_encoder0--;
-	}
-
-}
-
-static void doEncoder1() { // problem : there are only interrupts for pin 2 and 3 !!!
-  /* If pinA and pinB are both high or both low, it is spinning
-   * forward. If they're different, it's going backward.
-   *
-   * For more information on speeding up this process, see
-   * [Reference/PortManipulation], specifically the PIND register.
-   */
-	if (digitalRead(MFTP_Motores::_encoder1_pinA) == digitalRead(MFTP_Motores::_encoder1_pinB)) {
-	MFTP_Motores::_encoder1++;
-	} else {
-	MFTP_Motores::_encoder1--;
-	}
-
-}
-
 ////////////////////////////////////////////
 
 /*
@@ -117,7 +89,7 @@ void MFTP_Motores::add_motor(int id, int pwm1, int pwm2, int cnA, int cnB, int p
 	  digitalWrite(cnB, HIGH);       // turn on pullup resistor
 
 //////////////
-	if(cnA = 2) {
+	if(cnA == 2) {
 		_encoder_pos[id-1] = &_encoder0;
 		_encoder0_pinA = cnA;
 		_encoder0_pinB = cnB;
@@ -127,7 +99,7 @@ void MFTP_Motores::add_motor(int id, int pwm1, int pwm2, int cnA, int cnB, int p
 		_PID0.SetSampleTime(0.089/Kp);
         _motors_PID[id-1] = _PID0;
 	}
-	if(cnA = 3) {
+	if(cnA == 3) {
 		_encoder_pos[id-1] = &_encoder1;
 		_encoder1_pinA = cnA;
 		_encoder1_pinB = cnB;
@@ -239,7 +211,7 @@ void MFTP_Motores::add_motor(int id, int pwm1, int pwm2, int cnA, int cnB, int p
 		_motor_dynamic_matrix[id-1][5] = angular_pos - _motor_dynamic_matrix[id-1][4]; // speed =  current angular pos - last angular pos
 
 		_motor_dynamic_matrix[id-1][4] = angular_pos;
-		_motor_dynamic_matrix[id-1][2] = _motor_matrix[id-1][10] + angular_pos*_motor_matrix[id-1][6]; // position = pos_ini + (revolutions*ppv + pulses)*reduction
+		_motor_dynamic_matrix[id-1][2] = _motor_matrix[id-1][10] + angular_pos/_motor_matrix[id-1][6]; // position = pos_ini + (revolutions*ppv + pulses)*reduction
 
 		if(_moving_motors[id-1]) {
 
@@ -269,5 +241,39 @@ void MFTP_Motores::add_motor(int id, int pwm1, int pwm2, int cnA, int cnB, int p
 	}
 
   }
+  
+////////////////////////
+
+
+static void doEncoder0() { // problem : there are only interrupts for pin 2 and 3 !!!
+  /* If pinA and pinB are both high or both low, it is spinning
+   * forward. If they're different, it's going backward.
+   *
+   * For more information on speeding up this process, see
+   * [Reference/PortManipulation], specifically the PIND register.
+   */
+	if (digitalRead(_encoder0_pinA) == digitalRead(_encoder0_pinB)) {
+	_encoder0++;
+	} else {
+	_encoder0--;
+	}
+
+}
+
+static void doEncoder1() { // problem : there are only interrupts for pin 2 and 3 !!!
+  /* If pinA and pinB are both high or both low, it is spinning
+   * forward. If they're different, it's going backward.
+   *
+   * For more information on speeding up this process, see
+   * [Reference/PortManipulation], specifically the PIND register.
+   */
+	if (digitalRead(_encoder1_pinA) == digitalRead(_encoder1_pinB)) {
+	_encoder1++;
+	} else {
+	_encoder1--;
+	}
+
+}
+
 
 
