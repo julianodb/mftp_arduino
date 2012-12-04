@@ -14,14 +14,17 @@ class MFTP_Motores {
 private:
 
   enum { 
-    MAX_MOTORS = 2, 
+    MAX_MOTORS = 1, 
+	ANGULAR_HISTERESIS = 50
   };
+  
 
+  unsigned int _lastMillis;
 
-  int * _encoder_pos[MAX_MOTORS];
+  int *_encoder_pos[MAX_MOTORS];
   boolean _moving_motors[MAX_MOTORS];
   boolean _active_motors[MAX_MOTORS];
-  int _motor_matrix[MAX_MOTORS][11]; // pwm1 & pwm2 & cnA & cnB & pulses/revolution & course $ reduction & vmax & Kp & Tp & posini
+  int _motor_matrix[MAX_MOTORS][9]; // pwm1 & pwm2 & cnA & cnB & pulses/revolution & course $ reduction & vmax & posini
   int _motor_dynamic_matrix[MAX_MOTORS][7]; // set_speed & target_position & position & revolutions & angular_position & current_speed & controller_output
 
   PID _motors_PID[MAX_MOTORS];

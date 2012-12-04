@@ -1,9 +1,14 @@
+#include <PID_v1.h>
+
+#include <MFTP_Motores.h>
+
 #include <MFTP_Sensores.h>
 
 #include <ModbusSlave.h>
 
 ModbusSlave mbs;
 MFTP_Sensores Sens;
+MFTP_Motores Mots;
 
 /* slave registers */
 enum {        
@@ -100,10 +105,11 @@ void setup()
 void loop()
 {
   result = mbs.update(regs, MB_REGS);
+  Sens.get_all_values(regs); // be careful
+  Mots.refresh();
   
   if(regs[TYPE_RECORD] != 0) { // ready to record a new type of sensor
     Sens.add_type(regs[TYPE_ID],regs[TYPE_PARA], regs[TYPE_PARB], regs[TYPE_MULT]);
-    digitalWrite(ledPin,HIGH);
     
     regs[TYPE_ID]=0;
     regs[TYPE_PARA]=0;
@@ -113,14 +119,49 @@ void loop()
   }
   if(regs[SENSOR_RECORD] != 0) { // ready to record a new sensor
     Sens.add_sensor(regs[SENSOR_ID],regs[SENSOR_TYPE], regs[SENSOR_ADDRESS]);
-    digitalWrite(ledPin,LOW);
     
     regs[SENSOR_ID]=0;
     regs[SENSOR_TYPE]=0;
     regs[SENSOR_ADDRESS]=0;
     regs[SENSOR_RECORD]=0;
   }
+  if(regs[SENSOR_RECORD] != 0) { // ready to record a new sensor
+    Sens.add_sensor(regs[SENSOR_ID],regs[SENSOR_TYPE], regs[SENSOR_ADDRESS]);
     
+    regs[SENSOR_ID]=0;
+    regs[SENSOR_TYPE]=0;
+    regs[SENSOR_ADDRESS]=0;
+    regs[SENSOR_RECORD]=0;
+  }
+  if(regs[MOTOR_RECORD] != 0) { // ready to record a new motor
+  
+  Mots.add_motor(
+        regs[MOTOR_ID],
+        regs[MOTOR_PWM1],
+        regs[MOTOR_PWM2],
+        regs[MOTOR_CNA],
+        regs[MOTOR_CNB],
+        regs[MOTOR_PPV],
+        regs[MOTOR_COURSE],
+        regs[MOTOR_REDUCTION],
+        regs[MOTOR_VMAX],
+        regs[MOTOR_KP],
+        regs[MOTOR_TP],
+        regs[MOTOR_POSINI]);
+    
+        regs[MOTOR_PWM1]=0;
+        regs[MOTOR_PWM2]=0;
+        regs[MOTOR_CNA]=0;
+        regs[MOTOR_CNB]=0;
+        regs[MOTOR_PPV]=0;
+        regs[MOTOR_COURSE]=0;
+        regs[MOTOR_REDUCTION]=0;
+        regs[MOTOR_VMAX]=0;
+        regs[MOTOR_KP]=0;
+        regs[MOTOR_TP]=0;
+        regs[MOTOR_POSINI]=0;
+        regs[MOTOR_ID]=0;
+  }
   
 }
 
