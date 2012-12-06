@@ -15,7 +15,7 @@ private:
 
   enum { 
     MAX_MOTORS = 1, 
-	ANGULAR_HISTERESIS = 50
+	TIME_HISTERESIS = 5
   };
   
 

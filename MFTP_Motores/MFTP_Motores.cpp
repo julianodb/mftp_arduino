@@ -92,8 +92,8 @@ void MFTP_Motores::add_motor(int id, int pwm1, int pwm2, int cnA, int cnB, int p
 		_encoder0_pinB = cnB;
 		attachInterrupt(0, doEncoder0, CHANGE);
 		
-		static PID _PID0(&_motor_dynamic_matrix[id-1][5], &_motor_dynamic_matrix[id-1][6], &_motor_dynamic_matrix[id-1][0],(double)Kp/(double)invTp,Kp,0, DIRECT);
-		_PID0.SetSampleTime(0.089/Kp);
+		static PID _PID0(&_motor_dynamic_matrix[id-1][5], &_motor_dynamic_matrix[id-1][6], &_motor_dynamic_matrix[id-1][0],(double)Kp/(double)invTp,Kp/vmax,0, DIRECT);
+		_PID0.SetSampleTime(89/Kp);
         _motors_PID[id-1] = _PID0;
 	}
 	if(cnA == 3) {
@@ -101,8 +101,8 @@ void MFTP_Motores::add_motor(int id, int pwm1, int pwm2, int cnA, int cnB, int p
 		_encoder1_pinB = cnB;
 		attachInterrupt(1, doEncoder1, CHANGE);
 
-		static PID _PID1(&_motor_dynamic_matrix[id-1][5], &_motor_dynamic_matrix[id-1][6], &_motor_dynamic_matrix[id-1][0],(double)Kp/(double)invTp,Kp,0, DIRECT);
-		_PID1.SetSampleTime(0.089/Kp);
+		static PID _PID1(&_motor_dynamic_matrix[id-1][5], &_motor_dynamic_matrix[id-1][6], &_motor_dynamic_matrix[id-1][0],Kp*255/vmax,(double)Kp/(double)invTp,0, DIRECT);
+		_PID1.SetSampleTime(89/Kp);
         _motors_PID[id-1] = _PID1;
 	}
 
@@ -120,6 +120,7 @@ void MFTP_Motores::add_motor(int id, int pwm1, int pwm2, int cnA, int cnB, int p
 	for(int i = 0;i<MAX_MOTORS;i++) {
 
 	  _moving_motors[i] = false;
+	  set_move(i,false);
 	}
   }
 
@@ -203,13 +204,12 @@ void MFTP_Motores::add_motor(int id, int pwm1, int pwm2, int cnA, int cnB, int p
 		}
 
 		int angular_pos = (_motor_dynamic_matrix[id-1][3]*_motor_matrix[id-1][4]+*_encoder_pos[id-1]);
+		int time = (int)(millis()-_lastMillis);
 
-		if(angular_pos>_motor_dynamic_matrix[id-1][4]+ANGULAR_HISTERESIS ||
-		angular_pos<_motor_dynamic_matrix[id-1][4]-ANGULAR_HISTERESIS) {
+		if(time>TIME_HISTERESIS) {
 		
-			unsigned int time = millis()-_lastMillis;
 			_lastMillis = millis();
-			_motor_dynamic_matrix[id-1][5] = (angular_pos - _motor_dynamic_matrix[id-1][4])*1000/time; // speed =  current angular pos - last angular pos / time
+			_motor_dynamic_matrix[id-1][5] = ((angular_pos - _motor_dynamic_matrix[id-1][4])*255/time)/_motor_matrix[id-1][7]; // speed =  current angular pos - last angular pos / time
 
 			_motor_dynamic_matrix[id-1][4] = angular_pos;
 		}
@@ -218,11 +218,12 @@ void MFTP_Motores::add_motor(int id, int pwm1, int pwm2, int cnA, int cnB, int p
 		if(_moving_motors[id-1]) {
 
 		  _motors_PID[id-1].Compute();
+ 		 // _motor_dynamic_matrix[id-1][6]=_motor_dynamic_matrix[id-1][0]; // gambi
 		  if (_motor_dynamic_matrix[id-1][6]==0) { //stop
 	  		analogWrite(_motor_matrix[id-1][0],255);
 	  		analogWrite(_motor_matrix[id-1][1],255);
 		  }
-		  else if(_motor_dynamic_matrix[id-1][6]>0) { // move forward
+		  else if(_motor_dynamic_matrix[id-1][6]<0) { // move forward
 	  		analogWrite(_motor_matrix[id-1][0],_motor_dynamic_matrix[id-1][6]);
 	  		analogWrite(_motor_matrix[id-1][1],0);
 		  } 
